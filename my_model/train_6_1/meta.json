@@ -1,0 +1,32 @@
+{
+  "mode_size": 6,
+  "epochs_this_run": 12,
+  "device": "cuda",
+  "config": {
+    "emb_size": 288,
+    "head_size": 32,
+    "n_layer": 5,
+    "sequence_len": 128,
+    "learning_rate": 0.00025,
+    "eval_iters": 3,
+    "batch_size": 176,
+    "dropout": 0.26,
+    "seed": 12046,
+    "dataset_path": "./my_novel_dataset_v2",
+    "tokenizer_path": "./my_novel_tokenizer_v2",
+    "test_size": 0.1,
+    "split_seed": 1024,
+    "weight_decay": 0.11,
+    "label_smoothing": 0.09,
+    "grad_clip": 1.0,
+    "input_corrupt_prob": 0.09,
+    "sample_stride": 6,
+    "prefix_trunc_prob": 0.62,
+    "min_prefix_len": 36,
+    "lr_scheduler": "cosine",
+    "lr_cosine_t_max_epochs": 0,
+    "lr_cosine_eta_min": 1e-06
+  },
+  "resume_from": 0,
+  "resume_from_type": "test"
+}

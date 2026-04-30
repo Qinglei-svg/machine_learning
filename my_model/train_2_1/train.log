@@ -1,0 +1,124 @@
+2026-04-30 16:57:24,462 | INFO | device: cuda
+2026-04-30 16:57:24,463 | INFO | mode_size: 2
+2026-04-30 16:57:24,463 | INFO | epochs: 10
+2026-04-30 16:57:24,463 | INFO | resume_from_type: test
+2026-04-30 16:57:24,463 | INFO | config: {'emb_size': 192, 'head_size': 32, 'n_layer': 4, 'sequence_len': 128, 'learning_rate': 0.0003, 'eval_iters': 3, 'batch_size': 128, 'dropout': 0.2, 'seed': 12046, 'dataset_path': './my_novel_dataset', 'tokenizer_path': './my_novel_tokenizer', 'test_size': 0.1, 'split_seed': 1024, 'weight_decay': 0.1, 'label_smoothing': 0.05, 'grad_clip': 1.0, 'input_corrupt_prob': 0.08, 'sample_stride': 4, 'prefix_trunc_prob': 0.6, 'min_prefix_len': 32, 'lr_scheduler': 'none', 'lr_cosine_t_max_epochs': 0, 'lr_cosine_eta_min': 1e-06}
+2026-04-30 16:57:24,465 | INFO | run_dir: my_model/train_2_1
+2026-04-30 16:57:25,058 | INFO | model:
+CharGPT(
+  (token_emb): Embedding(8001, 192)
+  (pos_emb): Embedding(128, 192)
+  (blocks): Sequential(
+    (0): Block(
+      (l1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-5): 6 x MaskedAttention(
+            (key): Linear(in_features=192, out_features=32, bias=False)
+            (query): Linear(in_features=192, out_features=32, bias=False)
+            (value): Linear(in_features=192, out_features=32, bias=False)
+            (dp): Dropout(p=0.2, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=192, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+      (l2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=192, out_features=768, bias=True)
+        (ln2): Linear(in_features=768, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+    )
+    (1): Block(
+      (l1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-5): 6 x MaskedAttention(
+            (key): Linear(in_features=192, out_features=32, bias=False)
+            (query): Linear(in_features=192, out_features=32, bias=False)
+            (value): Linear(in_features=192, out_features=32, bias=False)
+            (dp): Dropout(p=0.2, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=192, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+      (l2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=192, out_features=768, bias=True)
+        (ln2): Linear(in_features=768, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+    )
+    (2): Block(
+      (l1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-5): 6 x MaskedAttention(
+            (key): Linear(in_features=192, out_features=32, bias=False)
+            (query): Linear(in_features=192, out_features=32, bias=False)
+            (value): Linear(in_features=192, out_features=32, bias=False)
+            (dp): Dropout(p=0.2, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=192, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+      (l2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=192, out_features=768, bias=True)
+        (ln2): Linear(in_features=768, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+    )
+    (3): Block(
+      (l1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-5): 6 x MaskedAttention(
+            (key): Linear(in_features=192, out_features=32, bias=False)
+            (query): Linear(in_features=192, out_features=32, bias=False)
+            (value): Linear(in_features=192, out_features=32, bias=False)
+            (dp): Dropout(p=0.2, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=192, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+      (l2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=192, out_features=768, bias=True)
+        (ln2): Linear(in_features=768, out_features=192, bias=True)
+        (dp): Dropout(p=0.2, inplace=False)
+      )
+    )
+  )
+  (l): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+  (lm): Linear(in_features=192, out_features=8001, bias=True)
+)
+2026-04-30 16:57:25,059 | INFO | total_params: 4882497
+2026-04-30 16:57:43,137 | INFO | epoch   0 | train loss 7.0916 | test loss 7.2810 | lr 3.00e-04
+2026-04-30 16:57:43,209 | INFO | save new best_test model at epoch 0, test loss 7.2810
+2026-04-30 16:57:43,277 | INFO | save new best_train model at epoch 0, train loss 7.0916
+2026-04-30 16:57:59,750 | INFO | epoch   1 | train loss 6.7855 | test loss 7.2346 | lr 3.00e-04
+2026-04-30 16:57:59,824 | INFO | save new best_test model at epoch 1, test loss 7.2346
+2026-04-30 16:57:59,894 | INFO | save new best_train model at epoch 1, train loss 6.7855
+2026-04-30 16:58:14,894 | INFO | epoch   2 | train loss 6.2514 | test loss 7.2216 | lr 3.00e-04
+2026-04-30 16:58:14,965 | INFO | save new best_test model at epoch 2, test loss 7.2216
+2026-04-30 16:58:15,037 | INFO | save new best_train model at epoch 2, train loss 6.2514
+2026-04-30 16:58:30,052 | INFO | epoch   3 | train loss 5.7057 | test loss 7.2328 | lr 3.00e-04
+2026-04-30 16:58:30,123 | INFO | save new best_train model at epoch 3, train loss 5.7057
+2026-04-30 16:58:45,097 | INFO | epoch   4 | train loss 5.1404 | test loss 7.2811 | lr 3.00e-04
+2026-04-30 16:58:45,171 | INFO | save new best_train model at epoch 4, train loss 5.1404
+2026-04-30 16:59:00,386 | INFO | epoch   5 | train loss 4.5963 | test loss 7.3579 | lr 3.00e-04
+2026-04-30 16:59:00,461 | INFO | save new best_train model at epoch 5, train loss 4.5963
+2026-04-30 16:59:15,474 | INFO | epoch   6 | train loss 4.0643 | test loss 7.4872 | lr 3.00e-04
+2026-04-30 16:59:15,550 | INFO | save new best_train model at epoch 6, train loss 4.0643
+2026-04-30 16:59:30,502 | INFO | epoch   7 | train loss 3.6516 | test loss 7.6624 | lr 3.00e-04
+2026-04-30 16:59:30,575 | INFO | save new best_train model at epoch 7, train loss 3.6516
+2026-04-30 16:59:45,536 | INFO | epoch   8 | train loss 3.2903 | test loss 7.8614 | lr 3.00e-04
+2026-04-30 16:59:45,614 | INFO | save new best_train model at epoch 8, train loss 3.2903
+2026-04-30 17:00:00,631 | INFO | epoch   9 | train loss 2.9573 | test loss 8.0961 | lr 3.00e-04
+2026-04-30 17:00:00,710 | INFO | save new best_train model at epoch 9, train loss 2.9573
+2026-04-30 17:00:01,089 | INFO | training done. artifacts saved in: my_model/train_2_1
