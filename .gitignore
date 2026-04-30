@@ -1,4 +1,4 @@
 *.pth
 *.arrow
-!\my_novel_dataset\data-00000-of-00001.arrow
-!\my_novel_dataset_v2\data-00000-of-00001.arrow
+!/my_novel_dataset/data-00000-of-00001.arrow
+!/my_novel_dataset_v2/data-00000-of-00001.arrow
