@@ -41,6 +41,13 @@ class TrainConfig:
     lr_scheduler: str = "none"
     lr_cosine_t_max_epochs: int = 0
     lr_cosine_eta_min: float = 1e-6
+    # 混合训练目标（默认关闭，保证旧参数组兼容）
+    mix_objective_prob: float = 0.0
+    span_corrupt_prob: float = 0.0
+    span_num_spans: int = 0
+    span_len_min: int = 2
+    span_len_max: int = 5
+    denoise_token_prob: float = 0.0
 
 
 def get_config_by_mode(mode_size: int) -> TrainConfig:
@@ -199,6 +206,33 @@ def get_config_by_mode(mode_size: int) -> TrainConfig:
             lr_cosine_t_max_epochs=0,
             lr_cosine_eta_min=1e-6,
         ),
+        # 与 v6 基本一致，但开启 span corruption + denoising 的混合训练目标
+        10: TrainConfig(
+            emb_size=288,
+            head_size=32,
+            n_layer=5,
+            learning_rate=2.5e-4,
+            batch_size=176,
+            dropout=0.26,
+            weight_decay=0.11,
+            label_smoothing=0.09,
+            grad_clip=1.0,
+            input_corrupt_prob=0.09,
+            sample_stride=6,
+            prefix_trunc_prob=0.62,
+            min_prefix_len=36,
+            dataset_path="./my_novel_dataset_v2",
+            tokenizer_path="./my_novel_tokenizer_v2",
+            lr_scheduler="cosine",
+            lr_cosine_t_max_epochs=0,
+            lr_cosine_eta_min=1e-6,
+            mix_objective_prob=0.35,
+            span_corrupt_prob=0.28,
+            span_num_spans=2,
+            span_len_min=2,
+            span_len_max=5,
+            denoise_token_prob=0.08,
+        ),
     }
     if mode_size not in configs:
         raise ValueError(f"未配置 mode_size={mode_size}，请先在 get_config_by_mode 中添加对应参数组。")
@@ -279,6 +313,102 @@ def random_prefix_truncate_inputs(
             if drop_len > 0:
                 out[i, :drop_len] = unk_id
     return out
+
+
+def apply_span_corruption(
+    inputs: torch.Tensor,
+    tokenizer,
+    span_corrupt_prob: float,
+    span_num_spans: int,
+    span_len_min: int,
+    span_len_max: int,
+) -> torch.Tensor:
+    """
+    Span corruption：按样本概率随机遮挡若干连续片段（替换为 unk），标签保持原始目标。
+    """
+    if span_corrupt_prob <= 0 or span_num_spans <= 0:
+        return inputs
+    unk_id = tokenizer.unk_token_id
+    if unk_id is None:
+        return inputs
+
+    out = inputs.clone()
+    bsz, t = out.shape
+    span_min = max(1, int(span_len_min))
+    span_max = max(span_min, int(span_len_max))
+
+    for i in range(bsz):
+        if torch.rand(1, device=out.device).item() >= span_corrupt_prob:
+            continue
+        for _ in range(span_num_spans):
+            span_len = int(torch.randint(span_min, span_max + 1, (1,), device=out.device).item())
+            if span_len >= t:
+                out[i, :] = unk_id
+                continue
+            start = int(torch.randint(0, t - span_len + 1, (1,), device=out.device).item())
+            out[i, start : start + span_len] = unk_id
+    return out
+
+
+def apply_denoising_noise(inputs: torch.Tensor, tokenizer, token_prob: float) -> torch.Tensor:
+    """
+    Denoising：随机 token 级别噪声（替换为 unk），标签保持原始目标。
+    """
+    if token_prob <= 0:
+        return inputs
+    unk_id = tokenizer.unk_token_id
+    if unk_id is None:
+        return inputs
+    mask = torch.rand_like(inputs, dtype=torch.float) < token_prob
+    out = inputs.clone()
+    out[mask] = unk_id
+    return out
+
+
+def apply_mixed_objective_noise(inputs: torch.Tensor, tokenizer, config: TrainConfig) -> torch.Tensor:
+    """
+    混合目标入口：按概率对当前 batch 施加 span corruption + denoising。
+    """
+    if config.mix_objective_prob <= 0:
+        return inputs
+    if torch.rand(1, device=inputs.device).item() >= config.mix_objective_prob:
+        return inputs
+
+    out = apply_span_corruption(
+        inputs=inputs,
+        tokenizer=tokenizer,
+        span_corrupt_prob=config.span_corrupt_prob,
+        span_num_spans=config.span_num_spans,
+        span_len_min=config.span_len_min,
+        span_len_max=config.span_len_max,
+    )
+    out = apply_denoising_noise(out, tokenizer, config.denoise_token_prob)
+    return out
+
+
+def apply_mixed_objective_noise_with_flag(
+    inputs: torch.Tensor,
+    tokenizer,
+    config: TrainConfig,
+) -> Tuple[torch.Tensor, bool]:
+    """
+    与 apply_mixed_objective_noise 相同，但额外返回该 batch 是否触发混合目标。
+    """
+    if config.mix_objective_prob <= 0:
+        return inputs, False
+    if torch.rand(1, device=inputs.device).item() >= config.mix_objective_prob:
+        return inputs, False
+
+    out = apply_span_corruption(
+        inputs=inputs,
+        tokenizer=tokenizer,
+        span_corrupt_prob=config.span_corrupt_prob,
+        span_num_spans=config.span_num_spans,
+        span_len_min=config.span_len_min,
+        span_len_max=config.span_len_max,
+    )
+    out = apply_denoising_noise(out, tokenizer, config.denoise_token_prob)
+    return out, True
 
 
 def attention(query, key, value, mask=None):
@@ -427,7 +557,7 @@ def get_next_run_id(base_dir: Path, mode_size: int) -> int:
     return max(ids, default=0) + 1
 
 
-def get_resume_dir(base_dir: Path, mode_size: int, remuse: int) -> Path:
+def get_resume_dir(base_dir: Path, mode_size: int, remuse: int, enforce_mode_match: bool = True) -> Path:
     run_dir = base_dir / f"train_{mode_size}_{remuse}"
     if not run_dir.exists():
         raise FileNotFoundError(f"未找到续训目录: {run_dir}")
@@ -436,7 +566,7 @@ def get_resume_dir(base_dir: Path, mode_size: int, remuse: int) -> Path:
         raise FileNotFoundError(f"续训目录缺少 meta.json: {run_dir}")
     meta = json.loads(meta_file.read_text(encoding="utf-8"))
     old_mode_size = int(meta.get("mode_size", -1))
-    if old_mode_size != mode_size:
+    if enforce_mode_match and old_mode_size != mode_size:
         raise ValueError(f"参数组不一致：当前 mode_size={mode_size}，待续训目录 mode_size={old_mode_size}")
     return run_dir
 
@@ -470,6 +600,12 @@ def main():
         choices=["test", "train"],
         help="续训时从哪类最优权重恢复：test=best_test_model.pth, train=best_train_model.pth",
     )
+    parser.add_argument(
+        "--resume_mode_size",
+        type=int,
+        default=0,
+        help="可选：从其他参数组续训。0表示与当前 mode_size 相同；非0时从 train_resumeModeSize_remuse 读取权重",
+    )
     args = parser.parse_args()
 
     config = get_config_by_mode(args.mode_size)
@@ -487,6 +623,7 @@ def main():
     logger.info("mode_size: %s", args.mode_size)
     logger.info("epochs: %s", args.epochs)
     logger.info("resume_from_type: %s", args.resume_from)
+    logger.info("resume_mode_size: %s", args.resume_mode_size if args.resume_mode_size != 0 else args.mode_size)
     logger.info("config: %s", asdict(config))
     logger.info("run_dir: %s", run_dir.as_posix())
 
@@ -521,7 +658,13 @@ def main():
     ckpt = None
 
     if args.remuse != 0:
-        resume_dir = get_resume_dir(root_dir, args.mode_size, args.remuse)
+        resume_mode_size = args.resume_mode_size if args.resume_mode_size != 0 else args.mode_size
+        resume_dir = get_resume_dir(
+            root_dir,
+            resume_mode_size,
+            args.remuse,
+            enforce_mode_match=(args.resume_mode_size == 0),
+        )
         resume_ckpt_name = "best_test_model.pth" if args.resume_from == "test" else "best_train_model.pth"
         resume_ckpt_path = resume_dir / resume_ckpt_name
         if not resume_ckpt_path.exists():
@@ -534,6 +677,7 @@ def main():
         best_test_loss = float(ckpt.get("best_test_loss", float("inf")))
         best_train_loss = float(ckpt.get("best_train_loss", float("inf")))
         logger.info("resume_from: %s", resume_dir.as_posix())
+        logger.info("resume_mode_size_real: %s", resume_mode_size)
         logger.info("resume_ckpt: %s", resume_ckpt_path.name)
         logger.info("resume_start_epoch: %s", start_epoch)
         logger.info("resume_best_test_loss: %.4f", best_test_loss)
@@ -558,11 +702,15 @@ def main():
         "config": asdict(config),
         "resume_from": args.remuse,
         "resume_from_type": args.resume_from,
+        "resume_mode_size": args.resume_mode_size if args.resume_mode_size != 0 else args.mode_size,
     }
     (run_dir / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
+        epoch_batches = 0
+        mixed_objective_triggered_batches = 0
         for data in train_loader:
+            epoch_batches += 1
             inputs, labels = data["inputs"], data["labels"]
             inputs = corrupt_inputs(inputs, tokenizer, config.input_corrupt_prob)
             inputs = random_prefix_truncate_inputs(
@@ -571,6 +719,9 @@ def main():
                 trunc_prob=config.prefix_trunc_prob,
                 min_prefix_len=config.min_prefix_len,
             )
+            inputs, mixed_applied = apply_mixed_objective_noise_with_flag(inputs, tokenizer, config)
+            if mixed_applied:
+                mixed_objective_triggered_batches += 1
             optimizer.zero_grad()
             logits = model(inputs)
             loss = F.cross_entropy(
@@ -594,6 +745,15 @@ def main():
             stats["test"],
             optimizer.param_groups[0]["lr"],
         )
+        if config.mix_objective_prob > 0:
+            mixed_ratio = mixed_objective_triggered_batches / max(1, epoch_batches)
+            logger.info(
+                "epoch %3d | mixed objective triggered %d/%d batches (%.2f%%)",
+                epoch,
+                mixed_objective_triggered_batches,
+                epoch_batches,
+                mixed_ratio * 100.0,
+            )
 
         if stats["test"] < best_test_loss:
             best_test_loss = stats["test"]

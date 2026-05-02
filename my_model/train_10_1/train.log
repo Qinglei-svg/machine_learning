@@ -1,0 +1,122 @@
+2026-05-01 01:04:31,294 | INFO | device: cuda
+2026-05-01 01:04:31,295 | INFO | mode_size: 10
+2026-05-01 01:04:31,295 | INFO | epochs: 10
+2026-05-01 01:04:31,295 | INFO | resume_from_type: test
+2026-05-01 01:04:31,295 | INFO | resume_mode_size: 6
+2026-05-01 01:04:31,295 | INFO | config: {'emb_size': 288, 'head_size': 32, 'n_layer': 5, 'sequence_len': 128, 'learning_rate': 0.00025, 'eval_iters': 3, 'batch_size': 176, 'dropout': 0.26, 'seed': 12046, 'dataset_path': './my_novel_dataset_v2', 'tokenizer_path': './my_novel_tokenizer_v2', 'test_size': 0.1, 'split_seed': 1024, 'weight_decay': 0.11, 'label_smoothing': 0.09, 'grad_clip': 1.0, 'input_corrupt_prob': 0.09, 'sample_stride': 6, 'prefix_trunc_prob': 0.62, 'min_prefix_len': 36, 'lr_scheduler': 'cosine', 'lr_cosine_t_max_epochs': 0, 'lr_cosine_eta_min': 1e-06, 'mix_objective_prob': 0.35, 'span_corrupt_prob': 0.28, 'span_num_spans': 2, 'span_len_min': 2, 'span_len_max': 5, 'denoise_token_prob': 0.08}
+2026-05-01 01:04:31,295 | INFO | run_dir: my_model/train_10_1
+2026-05-01 01:04:34,186 | INFO | model:
+CharGPT(
+  (token_emb): Embedding(9001, 288)
+  (pos_emb): Embedding(128, 288)
+  (blocks): Sequential(
+    (0): Block(
+      (l1): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-8): 9 x MaskedAttention(
+            (key): Linear(in_features=288, out_features=32, bias=False)
+            (query): Linear(in_features=288, out_features=32, bias=False)
+            (value): Linear(in_features=288, out_features=32, bias=False)
+            (dp): Dropout(p=0.26, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=288, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+      (l2): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=288, out_features=1152, bias=True)
+        (ln2): Linear(in_features=1152, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+    )
+    (1): Block(
+      (l1): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-8): 9 x MaskedAttention(
+            (key): Linear(in_features=288, out_features=32, bias=False)
+            (query): Linear(in_features=288, out_features=32, bias=False)
+            (value): Linear(in_features=288, out_features=32, bias=False)
+            (dp): Dropout(p=0.26, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=288, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+      (l2): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=288, out_features=1152, bias=True)
+        (ln2): Linear(in_features=1152, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+    )
+    (2): Block(
+      (l1): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-8): 9 x MaskedAttention(
+            (key): Linear(in_features=288, out_features=32, bias=False)
+            (query): Linear(in_features=288, out_features=32, bias=False)
+            (value): Linear(in_features=288, out_features=32, bias=False)
+            (dp): Dropout(p=0.26, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=288, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+      (l2): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=288, out_features=1152, bias=True)
+        (ln2): Linear(in_features=1152, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+    )
+    (3): Block(
+      (l1): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-8): 9 x MaskedAttention(
+            (key): Linear(in_features=288, out_features=32, bias=False)
+            (query): Linear(in_features=288, out_features=32, bias=False)
+            (value): Linear(in_features=288, out_features=32, bias=False)
+            (dp): Dropout(p=0.26, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=288, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+      (l2): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=288, out_features=1152, bias=True)
+        (ln2): Linear(in_features=1152, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+    )
+    (4): Block(
+      (l1): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (mha): MaskedMultiHeadAttention(
+        (heads): ModuleList(
+          (0-8): 9 x MaskedAttention(
+            (key): Linear(in_features=288, out_features=32, bias=False)
+            (query): Linear(in_features=288, out_features=32, bias=False)
+            (value): Linear(in_features=288, out_features=32, bias=False)
+            (dp): Dropout(p=0.26, inplace=False)
+          )
+        )
+        (proj): Linear(in_features=288, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+      (l2): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+      (ff): FeedForward(
+        (ln1): Linear(in_features=288, out_features=1152, bias=True)
+        (ln2): Linear(in_features=1152, out_features=288, bias=True)
+        (dp): Dropout(p=0.26, inplace=False)
+      )
+    )
+  )
+  (l): LayerNorm((288,), eps=1e-05, elementwise_affine=True)
+  (lm): Linear(in_features=288, out_features=9001, bias=True)
+)
+2026-05-01 01:04:34,189 | INFO | total_params: 10222057
