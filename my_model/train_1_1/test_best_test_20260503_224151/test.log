@@ -1,0 +1,15 @@
+2026-05-03 22:41:51,164 | INFO | device: cuda
+2026-05-03 22:41:51,165 | INFO | run_dir: my_model/train_1_1
+2026-05-03 22:41:51,165 | INFO | checkpoint: my_model/train_1_1/best_test_model.pth
+2026-05-03 22:41:51,165 | INFO | mode_size: 1
+2026-05-03 22:41:51,165 | INFO | weight_type: best_test
+2026-05-03 22:41:51,165 | INFO | num_samples: 3
+2026-05-03 22:41:51,165 | INFO | max_new_tokens: 300
+2026-05-03 22:41:51,166 | INFO | temperature: 1.0000
+2026-05-03 22:41:51,166 | INFO | seed: 12046
+2026-05-03 22:41:51,166 | INFO | config: TrainConfig(emb_size=384, head_size=8, n_layer=6, sequence_len=128, learning_rate=0.0003, eval_iters=3, batch_size=100, dropout=0.4, seed=12046, dataset_path='./my_novel_dataset', tokenizer_path='./my_novel_tokenizer', test_size=0.1, split_seed=1024, weight_decay=0.0, label_smoothing=0.0, grad_clip=0.0, input_corrupt_prob=0.0, sample_stride=1, prefix_trunc_prob=0.0, min_prefix_len=0, lr_scheduler='none', lr_cosine_t_max_epochs=0, lr_cosine_eta_min=1e-06, mix_objective_prob=0.0, span_corrupt_prob=0.0, span_num_spans=0, span_len_min=2, span_len_max=5, denoise_token_prob=0.0)
+2026-05-03 22:41:52,321 | INFO | model loaded. epoch in ckpt: 0
+2026-05-03 22:42:15,288 | INFO | sample 1 generated, text_length=536
+2026-05-03 22:42:37,314 | INFO | sample 2 generated, text_length=550
+2026-05-03 22:42:59,136 | INFO | sample 3 generated, text_length=539
+2026-05-03 22:42:59,137 | INFO | generation done. outputs: my_model/train_1_1/test_best_test_20260503_224151/generated.txt, my_model/train_1_1/test_best_test_20260503_224151/generated.json
