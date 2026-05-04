@@ -1,0 +1,18 @@
+# 深度学习框架
+torch>=2.0.0
+ 
+# Hugging Face Transformers（包含分词器和Dataset库）
+transformers>=4.30.0
+ 
+# 数据处理库（包含在transformers中）
+datasets>=2.10.0
+ 
+# 绘图库（用于生成训练损失曲线）
+matplotlib>=3.5.0
+ 
+# Web UI 框架（用于view.py交互式界面）
+streamlit>=1.20.0
+ 
+# 可选：如果需要更好的性能加速
+# sentencepiece>=0.1.97
+# protobuf>=3.20.0
